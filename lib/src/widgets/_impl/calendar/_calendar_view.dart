@@ -1,4 +1,17 @@
-part of '../calendar_date_picker2.dart';
+part of 'calendar_view_picker.dart';
+
+/*
+import 'package:calendar_date_picker2/src/models/config/calendar_date_picker2_config.dart';
+import 'package:calendar_date_picker2/src/utils/utils.dart';
+import 'package:calendar_date_picker2/src/widgets/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+
+part '../../buttons/month_control_buttons.dart';
+part '../../buttons/month_selection_button.dart';
+
+*/
 
 T? _ambiguate<T>(T? value) => value;
 
@@ -31,7 +44,7 @@ class _CalendarView extends StatefulWidget {
   final ValueChanged<DateTime> onDisplayedMonthChanged;
 
   @override
-  _CalendarViewState createState() => _CalendarViewState();
+  State<_CalendarView> createState() => _CalendarViewState();
 }
 
 class _CalendarViewState extends State<_CalendarView> {
@@ -157,7 +170,7 @@ class _CalendarViewState extends State<_CalendarView> {
   void _handleNextMonth() {
     if (!_isDisplayingLastMonth) {
       _pageController.nextPage(
-        duration: _monthScrollDuration,
+        duration: defaultScrollDuration,
         curve: Curves.ease,
       );
     }
@@ -167,7 +180,7 @@ class _CalendarViewState extends State<_CalendarView> {
   void _handlePreviousMonth() {
     if (!_isDisplayingFirstMonth) {
       _pageController.previousPage(
-        duration: _monthScrollDuration,
+        duration: defaultScrollDuration,
         curve: Curves.ease,
       );
     }
@@ -181,7 +194,7 @@ class _CalendarViewState extends State<_CalendarView> {
     } else {
       _pageController.animateToPage(
         monthPage,
-        duration: _monthScrollDuration,
+        duration: defaultScrollDuration,
         curve: Curves.ease,
       );
     }
@@ -298,75 +311,26 @@ class _CalendarViewState extends State<_CalendarView> {
   Widget _buildItems(BuildContext context, int index) {
     final DateTime month =
         DateUtils.addMonthsToMonthDate(widget.config.firstDate, index);
-    return _DayPicker(
+    return DayPicker(
       key: ValueKey<DateTime>(month),
       selectedDates: widget.selectedDates.whereType<DateTime>().toList(),
       onChanged: _handleDateSelected,
       config: widget.config,
       displayedMonth: month,
-      dayRowsCount: widget.config.dynamicCalendarRows == true
-          ? getDayRowsCount(
-              month.year,
-              month.month,
-              widget.config.firstDayOfWeek ??
-                  _localizations.firstDayOfWeekIndex,
-            )
-          : _maxDayPickerRowCount,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color controlColor =
-        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60);
-
     return Semantics(
       child: Column(
         children: <Widget>[
-          Container(
-            padding: widget.config.centerAlignModePicker != true
-                ? const EdgeInsetsDirectional.only(start: 16, end: 4)
-                : const EdgeInsetsDirectional.only(start: 8, end: 8),
-            height: (widget.config.controlsHeight ?? _subHeaderHeight),
-            child: Row(
-              children: <Widget>[
-                if (widget.config.centerAlignModePicker != true) const Spacer(),
-                if (widget.config.hideLastMonthIcon != true)
-                  IconButton(
-                    splashRadius: widget.config.dayMaxWidth != null
-                        ? widget.config.dayMaxWidth! * 2 / 3
-                        : null,
-                    icon: widget.config.lastMonthIcon ??
-                        Icon(widget.config.dayModeScrollDirection ==
-                                Axis.vertical
-                            ? Icons.keyboard_arrow_up
-                            : Icons.chevron_left),
-                    color: controlColor,
-                    tooltip: _isDisplayingFirstMonth
-                        ? null
-                        : _localizations.previousMonthTooltip,
-                    onPressed:
-                        _isDisplayingFirstMonth ? null : _handlePreviousMonth,
-                  ),
-                if (widget.config.centerAlignModePicker == true) const Spacer(),
-                if (widget.config.hideNextMonthIcon != true)
-                  IconButton(
-                    splashRadius: widget.config.dayMaxWidth != null
-                        ? widget.config.dayMaxWidth! * 2 / 3
-                        : null,
-                    icon: widget.config.nextMonthIcon ??
-                        Icon(widget.config.dayModeScrollDirection ==
-                                Axis.vertical
-                            ? Icons.keyboard_arrow_down
-                            : Icons.chevron_right),
-                    color: controlColor,
-                    tooltip: _isDisplayingLastMonth
-                        ? null
-                        : _localizations.nextMonthTooltip,
-                    onPressed: _isDisplayingLastMonth ? null : _handleNextMonth,
-                  ),
-              ],
-            ),
+          MonthControlButtons(
+            config: widget.config,
+            onPreviousMonth: _handlePreviousMonth,
+            onNextMonth: _handleNextMonth,
+            isFirstMonth: _isDisplayingFirstMonth,
+            isLastMonth: _isDisplayingLastMonth,
           ),
           Expanded(
             child: FocusableActionDetector(
@@ -374,7 +338,7 @@ class _CalendarViewState extends State<_CalendarView> {
               actions: _actionMap,
               focusNode: _dayGridFocus,
               onFocusChange: _handleGridFocusChange,
-              child: _FocusedDate(
+              child: FocusedDate(
                 date: _dayGridFocus.hasFocus ? _focusedDay : null,
                 child: PageView.builder(
                   key: _pageViewKey,

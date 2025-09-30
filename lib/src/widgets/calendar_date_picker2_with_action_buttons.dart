@@ -1,6 +1,9 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 
+part 'buttons/ok_button.dart';
+part 'buttons/cancel_button.dart';
+
 /// Display CalendarDatePicker with action buttons
 class CalendarDatePicker2WithActionButtons extends StatefulWidget {
   CalendarDatePicker2WithActionButtons({
@@ -81,8 +84,6 @@ class _CalendarDatePicker2WithActionButtonsState
 
   @override
   Widget build(BuildContext context) {
-    final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -99,74 +100,34 @@ class _CalendarDatePicker2WithActionButtonsState
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            _buildCancelButton(Theme.of(context).colorScheme, localizations),
+            _CancelButton(
+              config: widget.config,
+              onTap: () => setState(() {
+                _editCache = _values;
+                widget.onCancelTapped?.call();
+                if ((widget.config.openedFromDialog ?? false) &&
+                    (widget.config.closeDialogOnCancelTapped ?? true)) {
+                  Navigator.pop(context);
+                }
+              }),
+            ),
             if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
               SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
-            _buildOkButton(Theme.of(context).colorScheme, localizations),
+            _OkButton(
+              config: widget.config,
+              onTap: () => setState(() {
+                _values = _editCache;
+                widget.onValueChanged?.call(_values);
+                widget.onOkTapped?.call();
+                if ((widget.config.openedFromDialog ?? false) &&
+                    (widget.config.closeDialogOnOkTapped ?? true)) {
+                  Navigator.pop(context, _values);
+                }
+              }),
+            ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildCancelButton(
-      ColorScheme colorScheme, MaterialLocalizations localizations) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(5),
-      onTap: () => setState(() {
-        _editCache = _values;
-        widget.onCancelTapped?.call();
-        if ((widget.config.openedFromDialog ?? false) &&
-            (widget.config.closeDialogOnCancelTapped ?? true)) {
-          Navigator.pop(context);
-        }
-      }),
-      child: Container(
-        padding: widget.config.buttonPadding ??
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-        child: widget.config.cancelButton ??
-            Text(
-              localizations.cancelButtonLabel.toUpperCase(),
-              style: widget.config.cancelButtonTextStyle ??
-                  TextStyle(
-                    color: widget.config.selectedDayHighlightColor ??
-                        colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-            ),
-      ),
-    );
-  }
-
-  Widget _buildOkButton(
-      ColorScheme colorScheme, MaterialLocalizations localizations) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(5),
-      onTap: () => setState(() {
-        _values = _editCache;
-        widget.onValueChanged?.call(_values);
-        widget.onOkTapped?.call();
-        if ((widget.config.openedFromDialog ?? false) &&
-            (widget.config.closeDialogOnOkTapped ?? true)) {
-          Navigator.pop(context, _values);
-        }
-      }),
-      child: Container(
-        padding: widget.config.buttonPadding ??
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-        child: widget.config.okButton ??
-            Text(
-              localizations.okButtonLabel.toUpperCase(),
-              style: widget.config.okButtonTextStyle ??
-                  TextStyle(
-                    color: widget.config.selectedDayHighlightColor ??
-                        colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-            ),
-      ),
     );
   }
 }

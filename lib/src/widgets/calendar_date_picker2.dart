@@ -2,40 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:math' as math;
-
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-import 'package:flutter/gestures.dart';
+import 'package:calendar_date_picker2/src/widgets/_impl/calendar/calendar_view_picker.dart';
+import 'package:calendar_date_picker2/src/widgets/_impl/calendar_picker/calendar_picker_constants.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
-part '_impl/_calendar_scroll_view.dart';
-part '_impl/_calendar_view.dart';
-part '_impl/_date_picker_mode_toggle_button.dart';
-part '_impl/_day_picker.dart';
-part '_impl/_focus_date.dart';
-part '_impl/_month_picker.dart';
-part '_impl/year_picker.dart';
-
-const Duration _monthScrollDuration = Duration(milliseconds: 200);
-
-const double _dayPickerRowHeight = 42.0;
-const int _maxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
-const double _monthPickerHorizontalPadding = 8.0;
-
-const int _yearPickerColumnCount = 3;
-const double _yearPickerPadding = 16.0;
-const double _yearPickerRowHeight = 52.0;
-const double _yearPickerRowSpacing = 8.0;
-
-const int _monthPickerColumnCount = 3;
-const double _monthPickerPadding = 16.0;
-const double _monthPickerRowHeight = 52.0;
-const double _monthPickerRowSpacing = 8.0;
-
-const double _subHeaderHeight = 52.0;
-const double _monthNavButtonsWidth = 108.0;
+part 'buttons/_date_picker_mode_toggle_button.dart';
 
 class CalendarDatePicker2 extends StatefulWidget {
   CalendarDatePicker2({
@@ -93,9 +68,7 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
   late List<DateTime?> _selectedDates;
   late CalendarDatePicker2Mode _mode;
   late DateTime _currentDisplayedMonthDate;
-  final GlobalKey _dayPickerKey = GlobalKey();
-  final GlobalKey _monthPickerKey = GlobalKey();
-  final GlobalKey _yearPickerKey = GlobalKey();
+
   late MaterialLocalizations _localizations;
   late TextDirection _textDirection;
 
@@ -310,82 +283,47 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
     });
   }
 
-  Widget _buildPicker() {
-    switch (_mode) {
-      case CalendarDatePicker2Mode.day:
-        return _CalendarView(
-          config: widget.config,
-          key: _dayPickerKey,
-          initialMonth: _currentDisplayedMonthDate,
-          selectedDates: _selectedDates,
-          onChanged: _handleDayChanged,
-          onDisplayedMonthChanged: _handleDisplayedMonthDateChanged,
-        );
-      case CalendarDatePicker2Mode.month:
-        return Padding(
-          padding: EdgeInsets.only(
-              top: widget.config.controlsHeight ?? _subHeaderHeight),
-          child: _MonthPicker(
-            config: widget.config,
-            key: _monthPickerKey,
-            initialMonth: _currentDisplayedMonthDate,
-            selectedDates: _selectedDates,
-            onChanged: _handleMonthChanged,
-          ),
-        );
-      case CalendarDatePicker2Mode.year:
-        return Padding(
-          padding: EdgeInsets.only(
-              top: widget.config.controlsHeight ?? _subHeaderHeight),
-          child: YearPicker(
-            config: widget.config,
-            key: _yearPickerKey,
-            initialMonth: _currentDisplayedMonthDate,
-            selectedDates: _selectedDates,
-            onChanged: _handleYearChanged,
-          ),
-        );
-      case CalendarDatePicker2Mode.scroll:
-        return Container(
-          constraints: widget.config.scrollViewConstraints,
-          child: _CalendarScrollView(
-            config: widget.config,
-            key: _dayPickerKey,
-            initialMonth: _currentDisplayedMonthDate,
-            selectedDates: _selectedDates,
-            onChanged: _handleDayChanged,
-            onDisplayedMonthChanged: _handleDisplayedMonthDateChanged,
-          ),
-        );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
     assert(debugCheckHasMaterialLocalizations(context));
     assert(debugCheckHasDirectionality(context));
+
     final dayRowsCount = widget.config.dynamicCalendarRows == true
         ? getDayRowsCount(
             _currentDisplayedMonthDate.year,
             _currentDisplayedMonthDate.month,
             widget.config.firstDayOfWeek ?? _localizations.firstDayOfWeekIndex,
           )
-        : _maxDayPickerRowCount;
+        : maxDayPickerRowCount;
+
     final totalRowsCount = dayRowsCount + 1;
+
     final rowHeight = widget.config.dayMaxWidth != null
         ? (widget.config.dayMaxWidth! + 2)
-        : _dayPickerRowHeight;
+        : dayPickerRowHeight;
+
     final maxContentHeight = rowHeight * totalRowsCount;
 
+    final picker = CalendarViewPicker(
+      mode: _mode,
+      config: widget.config,
+      selectedDates: _selectedDates,
+      currentDisplayedMonthDate: _currentDisplayedMonthDate,
+      onDayChanged: _handleDayChanged,
+      onMonthChanged: _handleMonthChanged,
+      onYearChanged: _handleYearChanged,
+      onDisplayedMonthChanged: _handleDisplayedMonthDateChanged,
+    );
+
     return widget.config.calendarViewMode == CalendarDatePicker2Mode.scroll
-        ? _buildPicker()
+        ? picker
         : Stack(
             children: <Widget>[
               SizedBox(
-                height: (widget.config.controlsHeight ?? _subHeaderHeight) +
+                height: (widget.config.controlsHeight ?? defaultHeaderHeight) +
                     maxContentHeight,
-                child: _buildPicker(),
+                child: picker,
               ),
               // Put the mode toggle button on top so that it won't be covered up by the _CalendarView
               _DatePickerModeToggleButton(

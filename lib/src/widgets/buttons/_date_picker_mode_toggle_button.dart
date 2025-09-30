@@ -1,5 +1,7 @@
 part of '../calendar_date_picker2.dart';
 
+const double _monthNavButtonsWidth = 108.0;
+
 /// A button that used to toggle the [CalendarDatePicker2Mode] for a date picker.
 ///
 /// This appears above the calendar grid and allows the user to toggle the
@@ -11,7 +13,8 @@ class _DatePickerModeToggleButton extends StatefulWidget {
     required this.onMonthPressed,
     required this.onYearPressed,
     required this.config,
-  });
+    Key? key,
+  }) : super(key: key);
 
   /// The current display of the calendar picker.
   final CalendarDatePicker2Mode mode;
@@ -29,7 +32,7 @@ class _DatePickerModeToggleButton extends StatefulWidget {
   final CalendarDatePicker2Config config;
 
   @override
-  _DatePickerModeToggleButtonState createState() =>
+  State<_DatePickerModeToggleButton> createState() =>
       _DatePickerModeToggleButtonState();
 }
 
@@ -108,7 +111,7 @@ class _DatePickerModeToggleButtonState
       padding: widget.config.centerAlignModePicker == true
           ? EdgeInsets.zero
           : const EdgeInsetsDirectional.only(start: 16, end: 4),
-      height: (widget.config.controlsHeight ?? _subHeaderHeight),
+      height: (widget.config.controlsHeight ?? defaultHeaderHeight),
       child: Row(
         children: <Widget>[
           if (widget.mode == CalendarDatePicker2Mode.day &&
@@ -128,20 +131,24 @@ class _DatePickerModeToggleButtonState
     final ThemeData themeData = Theme.of(context);
     final ColorScheme colorScheme = themeData.colorScheme;
     final TextTheme textTheme = themeData.textTheme;
+
     final Color controlColor = colorScheme.onSurface.withValues(alpha: 0.60);
     final controlTextStyle = widget.config.controlsTextStyle ??
         textTheme.titleSmall?.copyWith(color: controlColor);
+
     final modePickerIcon = widget.config.customModePickerIcon ??
         Icon(
           Icons.arrow_drop_down,
           color: widget.config.controlsTextStyle?.color ?? controlColor,
         );
+
     final modePickerMainAxisAlignment =
         widget.config.centerAlignModePicker == true
             ? MainAxisAlignment.center
             : MainAxisAlignment.start;
+
     final horizontalPadding = widget.config.centerAlignModePicker == true
-        ? (widget.config.dayMaxWidth ?? (_dayPickerRowHeight - 2)) / 4
+        ? (widget.config.dayMaxWidth ?? (dayPickerRowHeight - 2)) / 4
         : 8.0;
 
     return widget.config.disableMonthPicker == true
@@ -154,7 +161,7 @@ class _DatePickerModeToggleButtonState
                 excludeSemantics: true,
                 button: true,
                 child: SizedBox(
-                  height: (widget.config.controlsHeight ?? _subHeaderHeight),
+                  height: (widget.config.controlsHeight ?? defaultHeaderHeight),
                   child: InkWell(
                     onTap: widget.config.disableModePicker == true
                         ? null
@@ -207,7 +214,7 @@ class _DatePickerModeToggleButtonState
                     button: true,
                     child: SizedBox(
                       height:
-                          (widget.config.controlsHeight ?? _subHeaderHeight),
+                          (widget.config.controlsHeight ?? defaultHeaderHeight),
                       child: InkWell(
                         onTap: widget.config.disableModePicker == true
                             ? null
@@ -264,7 +271,7 @@ class _DatePickerModeToggleButtonState
                     button: true,
                     child: SizedBox(
                       height:
-                          (widget.config.controlsHeight ?? _subHeaderHeight),
+                          (widget.config.controlsHeight ?? defaultHeaderHeight),
                       child: InkWell(
                         onTap: widget.config.disableModePicker == true
                             ? null

@@ -1,4 +1,4 @@
-part of '../calendar_date_picker2.dart';
+part of 'calendar_view_picker.dart';
 
 /// Displays a scrollable calendar grid that allows a user to select dates
 class _CalendarScrollView extends StatefulWidget {
@@ -30,7 +30,7 @@ class _CalendarScrollView extends StatefulWidget {
   final ValueChanged<DateTime> onDisplayedMonthChanged;
 
   @override
-  _CalendarScrollViewState createState() => _CalendarScrollViewState();
+  State<_CalendarScrollView> createState() => _CalendarScrollViewState();
 }
 
 class _CalendarScrollViewState extends State<_CalendarScrollView> {
@@ -38,8 +38,6 @@ class _CalendarScrollViewState extends State<_CalendarScrollView> {
   int _initialMonthIndex = 0;
   late ScrollController _controller;
   late bool _showWeekBottomDivider;
-
-  late MaterialLocalizations _localizations;
 
   @override
   void initState() {
@@ -65,12 +63,6 @@ class _CalendarScrollViewState extends State<_CalendarScrollView> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _localizations = MaterialLocalizations.of(context);
-  }
-
   void _scrollListener() {
     if (_controller.offset <= _controller.position.minScrollExtent) {
       setState(() {
@@ -86,76 +78,6 @@ class _CalendarScrollViewState extends State<_CalendarScrollView> {
 
   int get _numberOfMonths =>
       DateUtils.monthDelta(widget.config.firstDate, widget.config.lastDate) + 1;
-
-  Widget _buildMonthItem(
-      BuildContext context, int index, bool beforeInitialMonth) {
-    final ThemeData themeData = Theme.of(context);
-    final ColorScheme colorScheme = themeData.colorScheme;
-    final TextTheme textTheme = themeData.textTheme;
-    final Color controlColor = colorScheme.onSurface.withValues(alpha: 0.60);
-    final int monthIndex = beforeInitialMonth
-        ? _initialMonthIndex - index - 1
-        : _initialMonthIndex + index;
-    final DateTime month =
-        DateUtils.addMonthsToMonthDate(widget.config.firstDate, monthIndex);
-    final dayRowsCount = widget.config.dynamicCalendarRows == true
-        ? getDayRowsCount(
-            month.year,
-            month.month,
-            widget.config.firstDayOfWeek ?? _localizations.firstDayOfWeekIndex,
-          )
-        : _maxDayPickerRowCount;
-    var totalRowsCount = dayRowsCount + 1;
-    var rowHeight = widget.config.dayMaxWidth != null
-        ? (widget.config.dayMaxWidth! + 2)
-        : _dayPickerRowHeight;
-    if (widget.config.calendarViewMode == CalendarDatePicker2Mode.scroll &&
-        widget.config.hideScrollViewMonthWeekHeader == true) {
-      // Exclude header row
-      totalRowsCount -= 1;
-    }
-    final maxContentHeight = rowHeight * totalRowsCount;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        widget.config.scrollViewMonthYearBuilder?.call(month) ??
-            Row(
-              children: [
-                if (widget.config.centerAlignModePicker == true) const Spacer(),
-                Container(
-                  height: rowHeight,
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: _monthPickerHorizontalPadding),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: _monthPickerHorizontalPadding),
-                  child: Center(
-                    child: Text(
-                      widget.config.modePickerTextHandler
-                              ?.call(monthDate: month) ??
-                          _localizations.formatMonthYear(month),
-                      style: widget.config.controlsTextStyle ??
-                          textTheme.titleSmall?.copyWith(color: controlColor),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
-        SizedBox(
-          height: maxContentHeight,
-          child: _DayPicker(
-            key: ValueKey<DateTime>(month),
-            config: widget.config,
-            selectedDates: widget.selectedDates.whereType<DateTime>().toList(),
-            displayedMonth: month,
-            onChanged: widget.onChanged,
-            dayRowsCount: dayRowsCount,
-          ),
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,16 +112,30 @@ class _CalendarScrollViewState extends State<_CalendarScrollView> {
               slivers: <Widget>[
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) =>
-                        _buildMonthItem(context, index, true),
-                    childCount: _initialMonthIndex,
+                    // (context, index) => _buildMonthItem(context, index, true),
+                    (context, index) => _CalendarScrollMonth(
+                      config: widget.config,
+                      selectedDates: widget.selectedDates,
+                      onChanged: widget.onChanged,
+                      index: index,
+                      initialMonthIndex: _initialMonthIndex,
+                      beforeInitialMonth: true,
+                    ),
+                    childCount: _initialMonthIndex + 1,
                   ),
                 ),
                 SliverList(
                   key: monthsAfterInitialMonthKey,
                   delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) =>
-                        _buildMonthItem(context, index, false),
+                    // (context, index) => _buildMonthItem(context, index, false),
+                    (context, index) => _CalendarScrollMonth(
+                      config: widget.config,
+                      selectedDates: widget.selectedDates,
+                      onChanged: widget.onChanged,
+                      index: index,
+                      initialMonthIndex: _initialMonthIndex,
+                      beforeInitialMonth: false,
+                    ),
                     childCount: _numberOfMonths - _initialMonthIndex,
                   ),
                 ),
@@ -276,6 +212,7 @@ class _CalendarKeyboardNavigatorState
   void _handleGridFocusChange(bool focused) {
     setState(() {
       if (focused) {
+        // TODO(tobiaszuber): I think here's the problem with focus
         _focusedDay ??= widget.initialFocusedDay;
       }
     });
@@ -353,7 +290,7 @@ class _CalendarKeyboardNavigatorState
       actions: _actionMap,
       focusNode: _dayGridFocus,
       onFocusChange: _handleGridFocusChange,
-      child: _FocusedDate(
+      child: FocusedDate(
         date: _dayGridFocus.hasFocus ? _focusedDay : null,
         scrollDirection: _dayGridFocus.hasFocus ? _dayTraversalDirection : null,
         child: widget.child,
@@ -408,6 +345,7 @@ class _CalendarScrollViewHeader extends StatelessWidget {
               ),
         ),
       ));
+
       if (i == (firstDayOfWeek - 1) % 7) break;
     }
     return result;
@@ -428,23 +366,23 @@ class _CalendarScrollViewHeader extends StatelessWidget {
       constraints: BoxConstraints(
           maxHeight: config.dayMaxWidth != null
               ? config.dayMaxWidth! + 2
-              : _dayPickerRowHeight),
+              : dayPickerRowHeight),
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         final double tileWidth =
-            (constraints.maxWidth - _monthPickerHorizontalPadding * 2) /
+            (constraints.maxWidth - defaultHorizontalPadding * 2) /
                 DateTime.daysPerWeek;
 
         return Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: _monthPickerHorizontalPadding),
+          padding:
+              const EdgeInsets.symmetric(horizontal: defaultHorizontalPadding),
           child: Row(
             children: [
               const Spacer(),
               for (Widget header in headers)
                 SizedBox(
                   width: tileWidth,
-                  height: _dayPickerRowHeight,
+                  height: dayPickerRowHeight,
                   child: Center(child: header),
                 ),
               const Spacer(),
