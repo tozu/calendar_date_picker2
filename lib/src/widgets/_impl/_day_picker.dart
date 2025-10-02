@@ -358,6 +358,8 @@ class _DayPickerState extends State<_DayPicker> {
             onTap: () => widget.onChanged(dayToBuild),
             radius: dayInkRadius,
             splashColor: daySplashColor,
+            focusColor: widget.config.focusColor,
+            hoverColor: widget.config.hoverColor,
             child: Semantics(
               // We want the day of month to be spoken first irrespective of the
               // locale-specific preferences or TextDirection. This is because
