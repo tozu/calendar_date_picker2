@@ -182,6 +182,8 @@ class CalendarDatePicker2Config {
     this.rangeBidirectional,
     this.calendarViewScrollPhysics,
     this.daySplashColor,
+    this.focusColor,
+    this.hoverColor,
     this.allowSameValueSelection,
     this.disableMonthPicker,
     this.useAbbrLabelForMonthModePicker,
@@ -373,6 +375,12 @@ class CalendarDatePicker2Config {
   /// The splash color of the day widget
   final Color? daySplashColor;
 
+  /// The focus color of the day widget
+  final Color? focusColor;
+
+  /// The hover color of the day widget
+  final Color? hoverColor;
+
   /// When set to true, [onValueChanged] will be called on the same value selection
   final bool? allowSameValueSelection;
 
@@ -486,6 +494,8 @@ class CalendarDatePicker2Config {
     bool? rangeBidirectional,
     ScrollPhysics? calendarViewScrollPhysics,
     Color? daySplashColor,
+    Color? focusColor,
+    Color? hoverColor,
     bool? allowSameValueSelection,
     bool? disableMonthPicker,
     bool? useAbbrLabelForMonthModePicker,
@@ -668,6 +678,8 @@ class CalendarDatePicker2WithActionButtonsConfig
     bool? rangeBidirectional,
     ScrollPhysics? calendarViewScrollPhysics,
     Color? daySplashColor,
+    Color? focusColor,
+    Color? hoverColor,
     bool? allowSameValueSelection,
     bool? disableMonthPicker,
     bool? useAbbrLabelForMonthModePicker,
@@ -860,6 +872,8 @@ class CalendarDatePicker2WithActionButtonsConfig
     bool? rangeBidirectional,
     ScrollPhysics? calendarViewScrollPhysics,
     Color? daySplashColor,
+    Color? focusColor,
+    Color? hoverColor,
     bool? allowSameValueSelection,
     bool? disableMonthPicker,
     bool? useAbbrLabelForMonthModePicker,
