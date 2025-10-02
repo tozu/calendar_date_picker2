@@ -34,16 +34,20 @@ class _CalendarView extends StatefulWidget {
   _CalendarViewState createState() => _CalendarViewState();
 }
 
-class _CalendarViewState extends State<_CalendarView> {
+class _CalendarViewState extends State<_CalendarView>
+    with CalendarViewNavigationMixin {
   final GlobalKey _pageViewKey = GlobalKey();
   late DateTime _currentMonth;
   late PageController _pageController;
   late MaterialLocalizations _localizations;
   late TextDirection _textDirection;
-  Map<ShortcutActivator, Intent>? _shortcutMap;
-  Map<Type, Action<Intent>>? _actionMap;
-  late FocusNode _dayGridFocus;
+
   DateTime? _focusedDay;
+
+  late FocusNode _dayGridFocus;
+
+  @override
+  FocusNode get dayGridFocus => _dayGridFocus;
 
   @override
   void initState() {
@@ -51,26 +55,10 @@ class _CalendarViewState extends State<_CalendarView> {
     _currentMonth = widget.initialMonth;
     _pageController = widget.config.dayViewController ??
         PageController(
-            initialPage:
-                DateUtils.monthDelta(widget.config.firstDate, _currentMonth));
-    _shortcutMap = const <ShortcutActivator, Intent>{
-      SingleActivator(LogicalKeyboardKey.arrowLeft):
-          DirectionalFocusIntent(TraversalDirection.left),
-      SingleActivator(LogicalKeyboardKey.arrowRight):
-          DirectionalFocusIntent(TraversalDirection.right),
-      SingleActivator(LogicalKeyboardKey.arrowDown):
-          DirectionalFocusIntent(TraversalDirection.down),
-      SingleActivator(LogicalKeyboardKey.arrowUp):
-          DirectionalFocusIntent(TraversalDirection.up),
-    };
-    _actionMap = <Type, Action<Intent>>{
-      NextFocusIntent:
-          CallbackAction<NextFocusIntent>(onInvoke: _handleGridNextFocus),
-      PreviousFocusIntent: CallbackAction<PreviousFocusIntent>(
-          onInvoke: _handleGridPreviousFocus),
-      DirectionalFocusIntent: CallbackAction<DirectionalFocusIntent>(
-          onInvoke: _handleDirectionFocus),
-    };
+          initialPage:
+              DateUtils.monthDelta(widget.config.firstDate, _currentMonth),
+        );
+
     _dayGridFocus = FocusNode(debugLabel: 'Day Grid');
   }
 
@@ -218,18 +206,6 @@ class _CalendarViewState extends State<_CalendarView> {
     });
   }
 
-  /// Move focus to the next element after the day grid.
-  void _handleGridNextFocus(NextFocusIntent intent) {
-    _dayGridFocus.requestFocus();
-    _dayGridFocus.nextFocus();
-  }
-
-  /// Move focus to the previous element before the day grid.
-  void _handleGridPreviousFocus(PreviousFocusIntent intent) {
-    _dayGridFocus.requestFocus();
-    _dayGridFocus.previousFocus();
-  }
-
   /// Move the internal focus date in the direction of the given intent.
   ///
   /// This will attempt to move the focused day to the next selectable day in
@@ -239,7 +215,8 @@ class _CalendarViewState extends State<_CalendarView> {
   /// For horizontal directions, it will move forward or backward a day (depending
   /// on the current [TextDirection]). For vertical directions it will move up and
   /// down a week at a time.
-  void _handleDirectionFocus(DirectionalFocusIntent intent) {
+  @override
+  void handleDirectionFocus(DirectionalFocusIntent intent) {
     setState(() {
       if (_focusedDay != null) {
         final nextDate = _nextDateInDirection(_focusedDay!, intent.direction);
@@ -255,38 +232,17 @@ class _CalendarViewState extends State<_CalendarView> {
     });
   }
 
-  static const Map<TraversalDirection, int> _directionOffset =
-      <TraversalDirection, int>{
-    TraversalDirection.up: -DateTime.daysPerWeek,
-    TraversalDirection.right: 1,
-    TraversalDirection.down: DateTime.daysPerWeek,
-    TraversalDirection.left: -1,
-  };
-
-  int _dayDirectionOffset(
-      TraversalDirection traversalDirection, TextDirection textDirection) {
-    // Swap left and right if the text direction if RTL
-    if (textDirection == TextDirection.rtl) {
-      if (traversalDirection == TraversalDirection.left) {
-        traversalDirection = TraversalDirection.right;
-      } else if (traversalDirection == TraversalDirection.right) {
-        traversalDirection = TraversalDirection.left;
-      }
-    }
-    return _directionOffset[traversalDirection]!;
-  }
-
   DateTime? _nextDateInDirection(DateTime date, TraversalDirection direction) {
     final TextDirection textDirection = Directionality.of(context);
     DateTime nextDate = DateUtils.addDaysToDate(
-        date, _dayDirectionOffset(direction, textDirection));
+        date, dayDirectionOffset(direction, textDirection));
     while (!nextDate.isBefore(widget.config.firstDate) &&
         !nextDate.isAfter(widget.config.lastDate)) {
       if (_isSelectable(nextDate)) {
         return nextDate;
       }
       nextDate = DateUtils.addDaysToDate(
-          nextDate, _dayDirectionOffset(direction, textDirection));
+          nextDate, dayDirectionOffset(direction, textDirection));
     }
     return null;
   }
@@ -333,6 +289,7 @@ class _CalendarViewState extends State<_CalendarView> {
                 if (widget.config.centerAlignModePicker != true) const Spacer(),
                 if (widget.config.hideLastMonthIcon != true)
                   IconButton(
+                    focusNode: FocusNode(debugLabel: 'Previous month'),
                     splashRadius: widget.config.dayMaxWidth != null
                         ? widget.config.dayMaxWidth! * 2 / 3
                         : null,
@@ -351,6 +308,7 @@ class _CalendarViewState extends State<_CalendarView> {
                 if (widget.config.centerAlignModePicker == true) const Spacer(),
                 if (widget.config.hideNextMonthIcon != true)
                   IconButton(
+                    focusNode: FocusNode(debugLabel: 'Next month'),
                     splashRadius: widget.config.dayMaxWidth != null
                         ? widget.config.dayMaxWidth! * 2 / 3
                         : null,
@@ -370,8 +328,8 @@ class _CalendarViewState extends State<_CalendarView> {
           ),
           Expanded(
             child: FocusableActionDetector(
-              shortcuts: _shortcutMap,
-              actions: _actionMap,
+              shortcuts: shortcuts,
+              actions: actions,
               focusNode: _dayGridFocus,
               onFocusChange: _handleGridFocusChange,
               child: _FocusedDate(
