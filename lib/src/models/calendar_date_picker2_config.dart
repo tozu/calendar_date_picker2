@@ -76,6 +76,13 @@ typedef MonthBuilder = Widget? Function({
   bool? isCurrentMonth,
 });
 
+typedef MonthControlBuilder = Widget? Function({
+  required VoidCallback onPressed,
+  required IconData icon,
+  required bool isInactive,
+  String? tooltip,
+});
+
 /// Builder for the month and year in the scroll calendar view.
 typedef ScrollViewMonthYearBuilder = Widget Function(DateTime monthDate);
 
@@ -170,6 +177,7 @@ class CalendarDatePicker2Config {
     this.dayBuilder,
     this.yearBuilder,
     this.monthBuilder,
+    this.monthControlBuilder,
     this.monthViewController,
     this.yearViewController,
     this.disableModePicker,
@@ -341,6 +349,9 @@ class CalendarDatePicker2Config {
   /// Function to provide full control over month widget UI
   final MonthBuilder? monthBuilder;
 
+  /// Function to provide full control over month control widget UI
+  final MonthControlBuilder? monthControlBuilder;
+
   /// Custom scroll controller for the calendar month view
   final ScrollController? monthViewController;
 
@@ -483,6 +494,7 @@ class CalendarDatePicker2Config {
     DayBuilder? dayBuilder,
     YearBuilder? yearBuilder,
     MonthBuilder? monthBuilder,
+    MonthControlBuilder? monthControlBuilder,
     ScrollController? monthViewController,
     ScrollController? yearViewController,
     bool? disableModePicker,
@@ -571,6 +583,7 @@ class CalendarDatePicker2Config {
       dayBuilder: dayBuilder ?? this.dayBuilder,
       yearBuilder: yearBuilder ?? this.yearBuilder,
       monthBuilder: monthBuilder ?? this.monthBuilder,
+      monthControlBuilder: monthControlBuilder ?? this.monthControlBuilder,
       monthViewController: monthViewController ?? this.monthViewController,
       yearViewController: yearViewController ?? this.yearViewController,
       disableModePicker: disableModePicker ?? this.disableModePicker,
@@ -667,6 +680,7 @@ class CalendarDatePicker2WithActionButtonsConfig
     DayBuilder? dayBuilder,
     YearBuilder? yearBuilder,
     MonthBuilder? monthBuilder,
+    MonthControlBuilder? monthControlBuilder,
     ScrollController? monthViewController,
     ScrollController? yearViewController,
     bool? disableModePicker,
@@ -750,6 +764,7 @@ class CalendarDatePicker2WithActionButtonsConfig
           dayBuilder: dayBuilder,
           yearBuilder: yearBuilder,
           monthBuilder: monthBuilder,
+          monthControlBuilder: monthControlBuilder,
           monthViewController: monthViewController,
           yearViewController: yearViewController,
           disableModePicker: disableModePicker,
@@ -852,6 +867,7 @@ class CalendarDatePicker2WithActionButtonsConfig
     DayBuilder? dayBuilder,
     YearBuilder? yearBuilder,
     MonthBuilder? monthBuilder,
+    MonthControlBuilder? monthControlBuilder,
     ScrollController? monthViewController,
     ScrollController? yearViewController,
     bool? disableModePicker,
@@ -949,6 +965,7 @@ class CalendarDatePicker2WithActionButtonsConfig
       dayBuilder: dayBuilder ?? this.dayBuilder,
       yearBuilder: yearBuilder ?? this.yearBuilder,
       monthBuilder: monthBuilder ?? this.monthBuilder,
+      monthControlBuilder: monthControlBuilder ?? this.monthControlBuilder,
       monthViewController: monthViewController ?? this.monthViewController,
       yearViewController: yearViewController ?? this.yearViewController,
       disableModePicker: disableModePicker ?? this.disableModePicker,
