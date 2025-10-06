@@ -273,9 +273,6 @@ class _CalendarViewState extends State<_CalendarView>
 
   @override
   Widget build(BuildContext context) {
-    final Color controlColor =
-        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60);
-
     return Semantics(
       child: Column(
         children: <Widget>[
@@ -288,40 +285,48 @@ class _CalendarViewState extends State<_CalendarView>
               children: <Widget>[
                 if (widget.config.centerAlignModePicker != true) const Spacer(),
                 if (widget.config.hideLastMonthIcon != true)
-                  IconButton(
-                    focusNode: FocusNode(debugLabel: 'Previous month'),
-                    splashRadius: widget.config.dayMaxWidth != null
-                        ? widget.config.dayMaxWidth! * 2 / 3
-                        : null,
-                    icon: widget.config.lastMonthIcon ??
-                        Icon(widget.config.dayModeScrollDirection ==
+                  widget.config.monthControlBuilder?.call(
+                        onPressed: _handlePreviousMonth,
+                        isInactive: _isDisplayingFirstMonth,
+                        icon: widget.config.dayModeScrollDirection ==
                                 Axis.vertical
                             ? Icons.keyboard_arrow_up
-                            : Icons.chevron_left),
-                    color: controlColor,
+                            : Icons.chevron_left,
+                        tooltip: _localizations.previousMonthTooltip,
+                      ) ??
+                      _MonthControlButton(
+                        focusNode: FocusNode(debugLabel: 'Previous month'),
+                        config: widget.config,
+                        verticalIcon: Icons.keyboard_arrow_up,
+                        horizontalIcon: Icons.chevron_left,
                     tooltip: _isDisplayingFirstMonth
                         ? null
                         : _localizations.previousMonthTooltip,
-                    onPressed:
-                        _isDisplayingFirstMonth ? null : _handlePreviousMonth,
+                        onPressed: _isDisplayingFirstMonth
+                            ? null
+                            : _handlePreviousMonth,
                   ),
                 if (widget.config.centerAlignModePicker == true) const Spacer(),
                 if (widget.config.hideNextMonthIcon != true)
-                  IconButton(
-                    focusNode: FocusNode(debugLabel: 'Next month'),
-                    splashRadius: widget.config.dayMaxWidth != null
-                        ? widget.config.dayMaxWidth! * 2 / 3
-                        : null,
-                    icon: widget.config.nextMonthIcon ??
-                        Icon(widget.config.dayModeScrollDirection ==
+                  widget.config.monthControlBuilder?.call(
+                        onPressed: _handleNextMonth,
+                        isInactive: _isDisplayingLastMonth,
+                        icon: widget.config.dayModeScrollDirection ==
                                 Axis.vertical
                             ? Icons.keyboard_arrow_down
-                            : Icons.chevron_right),
-                    color: controlColor,
+                            : Icons.chevron_right,
+                        tooltip: _localizations.nextMonthTooltip,
+                      ) ??
+                      _MonthControlButton(
+                        focusNode: FocusNode(debugLabel: 'Next month'),
+                        config: widget.config,
+                        verticalIcon: Icons.keyboard_arrow_down,
+                        horizontalIcon: Icons.chevron_right,
                     tooltip: _isDisplayingLastMonth
                         ? null
                         : _localizations.nextMonthTooltip,
-                    onPressed: _isDisplayingLastMonth ? null : _handleNextMonth,
+                        onPressed:
+                            _isDisplayingLastMonth ? null : _handleNextMonth,
                   ),
               ],
             ),
